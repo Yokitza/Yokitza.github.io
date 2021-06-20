@@ -4,18 +4,45 @@ const App = () => {
   const appStyles = {
     height: "100vh",
     width: "100%",
-    backgroundColor: "#aeaeae",
   };
-  const LOCAL_STORAGE_KEY = "markers";
-  let defaultMarkersState =
-    JSON.parse(window.localStorage?.getItem(LOCAL_STORAGE_KEY)) || [];
+  const LOCAL_STORAGE_KEY = "mapmarker";
+  const getLocalStorage = () => {
+    return JSON.parse(window.localStorage.getItem(LOCAL_STORAGE_KEY));
+  };
+  let defaultZoomState = getLocalStorage()?.zoom || 8;
+  let defaultMarkersState = getLocalStorage()?.markers || [];
+  let defaultCenterState = getLocalStorage()?.center || {
+    lat: 40.5,
+    lng: -74.5,
+  };
+  const [zoom, _setZoom] = React.useState(defaultZoomState);
+  const [center, _setCenter] = React.useState(defaultCenterState);
   const [markers, _setMarkers] = React.useState(defaultMarkersState);
+
+  const updateLocalStorage = () => {
+    window.localStorage.setItem(
+      LOCAL_STORAGE_KEY,
+      JSON.stringify({ zoom: zoom, center: center, markers: markers })
+    );
+  };
+
+  const setZoom = (_zoom) => {
+    _setZoom(_zoom);
+    updateLocalStorage();
+  };
+
+  const setCenter = (_center) => {
+    _setCenter(_center);
+    updateLocalStorage();
+  };
+
   const setMarkers = (values) => {
     _setMarkers(values);
-    window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(values));
+    updateLocalStorage();
   };
+
   const [batchValue, setBatchValue] = React.useState(null);
-  const addMarker = (lat, lng, colorIndex = 0) => {
+  const addMarker = (lat, lng) => {
     const newMarker = {
       id: Math.random() * 1000,
       lat: lat,
@@ -45,6 +72,10 @@ const App = () => {
   return (
     <div style={appStyles}>
       <Map
+        zoom={zoom}
+        center={center}
+        setCenter={setCenter}
+        setZoom={setZoom}
         addMarker={addMarker}
         markers={markers}
         setMarkers={setMarkers}
@@ -71,7 +102,7 @@ const App = () => {
           boxShadow: "rgb(0 0 0 / 30%) 0px 1px 4px -1px;",
         }}
       >
-        <h2 style={{ marginTop: 0 }}>Batch Add</h2>
+        <h2 style={{ marginTop: 0 }}>Batch box</h2>
         <textarea
           rows="4"
           style={{ height: "10rem", resize: "none", marginBottom: "1rem" }}
@@ -87,5 +118,5 @@ const App = () => {
     </div>
   );
 };
- 
+
 export default App;
